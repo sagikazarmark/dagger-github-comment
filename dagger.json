@@ -1,0 +1,15 @@
+{
+  "name": "dagger-github-comment",
+  "sdk": "go",
+  "source": "dagger",
+  "engineVersion": "v0.12.4",
+  "views": [
+    {
+      "name": "default",
+      "patterns": [
+        "!.devenv",
+        "!.direnv"
+      ]
+    }
+  ]
+}
