@@ -22,3 +22,5 @@ jobs:
                   module: github.com/${{ github.repository }}@${{ github.ref }}
                   args: --github-token env:GITHUB_TOKEN process --payload payload.json
                   version: 0.12.4
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
