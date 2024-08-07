@@ -53,7 +53,7 @@ func (m *DaggerGithubComment) Process(
 
 	_, _, err = client.Reactions.CreateIssueCommentReaction(
 		ctx,
-		event.GetRepo().GetOwner().GetName(),
+		event.GetRepo().GetOwner().GetLogin(),
 		event.GetRepo().GetName(),
 		event.GetComment().GetID(),
 		"+1",
