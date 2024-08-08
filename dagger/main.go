@@ -24,6 +24,8 @@ func New(githubToken *dagger.Secret) *DaggerGithubComment {
 func (m *DaggerGithubComment) Process(
 	ctx context.Context,
 
+	eventName string,
+
 	// Event payload.
 	payload *dagger.File,
 ) error {
@@ -31,14 +33,6 @@ func (m *DaggerGithubComment) Process(
 	if err != nil {
 		return err
 	}
-
-	var event github.IssueCommentEvent
-
-	if err := json.Unmarshal([]byte(payloadContents), &event); err != nil {
-		return err
-	}
-
-	fmt.Println("Event: ", event.Issue.GetID())
 
 	githubToken, err := m.GithubToken.Plaintext(ctx)
 	if err != nil {
@@ -51,7 +45,33 @@ func (m *DaggerGithubComment) Process(
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
 
-	_, _, err = client.Reactions.CreateIssueCommentReaction(
+	handler := issueCommentEventHandler{
+		Client: client,
+	}
+
+	switch eventName {
+	case "issue_comment":
+		var event github.IssueCommentEvent
+
+		if err := json.Unmarshal([]byte(payloadContents), &event); err != nil {
+			return err
+		}
+
+		handler.handle(ctx, event)
+
+	default:
+		fmt.Println("unknown event: ", eventName)
+	}
+
+	return nil
+}
+
+type issueCommentEventHandler struct {
+	Client *github.Client
+}
+
+func (h issueCommentEventHandler) handle(ctx context.Context, event github.IssueCommentEvent) error {
+	_, _, err := h.Client.Reactions.CreateIssueCommentReaction(
 		ctx,
 		event.GetRepo().GetOwner().GetLogin(),
 		event.GetRepo().GetName(),
